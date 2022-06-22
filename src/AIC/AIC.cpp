@@ -14,7 +14,7 @@
  * 
  * @param signals 
  */
-AIC::AIC(const trunk_signal *signals)
+AIC::AIC(const Signal_RE *signals)
 {
     _signals = signals;
 }
@@ -54,7 +54,7 @@ void AIC::_find_signal_maxs()
 void AIC::_find_vth_surpass() {
     bool emitter_triggered = false;
     bool receiver_triggered = false;
-    int i = 0;
+    uint16_t i = 0;
 
     _emitter_params.vth = _emitter_params.max_value * EMITTER_VTH_FACTOR;
     _receiver_params.vth = _receiver_params.max_value * RECEIVER_VTH_FACTOR;
@@ -158,10 +158,10 @@ void AIC::_extract_window()
  * @param end end position to include on the mean calculus (inclusive)
  * @return int 
  */
-int AIC::_mean(const int vector[], int start, int end)
+uint16_t AIC::_mean(const uint16_t vector[], uint16_t start, uint16_t end)
 {
-    int mean = 0;
-    for (int i = start; i <= end; i++) {
+    uint16_t mean = 0;
+    for (uint16_t i = start; i <= end; i++) {
         mean += vector[i];
     }
     mean /= (end - start + 1);  // (end - start) == (N - 1)
@@ -178,11 +178,11 @@ int AIC::_mean(const int vector[], int start, int end)
  * @param end end position to include on the variance calculus (inclusive)
  * @return int
  */
-int AIC::_var(const int vector[], int start, int end)
+uint16_t AIC::_var(const uint16_t vector[], uint16_t start, uint16_t end)
 {
-    int var, aux = 0;
-    int mean = AIC::_mean(vector, start, end);
-    for (int i = start; i <= end; i++) {
+    uint16_t var = 0, aux = 0;
+    uint16_t mean = AIC::_mean(vector, start, end);
+    for (uint16_t i = start; i <= end; i++) {
         aux = (vector[i] - mean);
         var += aux * aux;
     }
@@ -199,11 +199,11 @@ int AIC::_var(const int vector[], int start, int end)
  * @param end end position to include on the minimum search (inclusive)
  * @return int 
  */
-int AIC::_find_minimum_index(const int vector[], int start, int end)
+uint16_t AIC::_find_minimum_index(const uint32_t vector[], uint16_t start, uint16_t end)
 {   
-    int value = vector[start];
-    int index = 0;
-    for (int i = start + 1; i <= end; i++) {
+    uint16_t value = vector[start];
+    uint16_t index = 0;
+    for (uint16_t i = start + 1; i <= end; i++) {
         if (vector[i] < value) {
             value = vector[i];
             index = i;
@@ -217,12 +217,13 @@ int AIC::_find_minimum_index(const int vector[], int start, int end)
  * @brief Computes the AIC Algorithm and returns the ToF time (delay between 2 signals).
  * 
  */
-int AIC::compute()
+uint16_t AIC::compute()
 {   
     // 'k' has to be always more than 2, and in practice it has to start at a higher value
-    int k = NON_ZERO_START_POINT;
-    const int v_init = _receiver_params.window_init + NON_ZERO_START_POINT;
-    const int v_end = _receiver_params.window_size - NON_ZERO_START_POINT;
+    uint16_t k = NON_ZERO_START_POINT;
+    const uint16_t v_init = _receiver_params.window_init + NON_ZERO_START_POINT;
+    const uint16_t v_end = _receiver_params.window_size - NON_ZERO_START_POINT;
+    uint16_t delay_samples, delay_time_us;
     
 
     // EMITTER ---------------------------------------------------------------------------
@@ -240,7 +241,7 @@ int AIC::compute()
     // This method also provides a narrower minimum decision window with less error.
     // Change condition 'i < v_end' for 'i < _receiver_params.first_vth_surpass_index'
 
-    for (int i = v_init; i <= v_end; i++)
+    for (uint16_t i = v_init; i <= v_end; i++)
     {
         _receiver_akaike_func[k] = k * log(AIC::_var(_signals->receiver, v_init, v_init + k))
                                    + (_receiver_params.window_size - k - 1)

@@ -1,4 +1,4 @@
-#include <freertos/FreeRTOS.h>
+//#include <freertos/FreeRTOS.h>
 #include "ADCSampler.h"
 
 ADCSampler::ADCSampler(adc_unit_t adcUnit, adc1_channel_t adcChannel, const i2s_config_t &i2s_config) {

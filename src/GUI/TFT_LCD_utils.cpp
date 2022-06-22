@@ -1,7 +1,12 @@
+/*
 #include <Arduino.h>
 #include "FS.h"
 #include <TFT_eSPI.h> // Hardware-specific library
+//#include <SPIFFS.h>
+*/
 
+
+/*
 TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 
 
@@ -13,9 +18,9 @@ TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
 // again, otherwise it will only be done once.
 // Repeat calibration if you change the screen rotation.
 #define REPEAT_CAL true
+*/
 
-
-
+/*
 void touch_calibrate() {
 
     uint16_t calData[5];
@@ -77,3 +82,4 @@ void touch_calibrate() {
         }
     }
 }
+*/

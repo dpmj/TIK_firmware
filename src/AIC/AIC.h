@@ -5,8 +5,9 @@
 
 #pragma once
 
+#include <stdint.h>
 #include <math.h> // for log()
-#include "../ADCSampler/trunk_signal.h"
+#include "SignalRE.h"
 
 
 
@@ -22,14 +23,13 @@
 #define RIGHT_WINDOW_MARGIN 1000
 
 
-
 // DATA TYPES ----------------------------------------------------------------------------
 
 /**
  * @brief parameter structure for AIC signals.
  * Contains all the auxiliary parameters needed to compute AIC.
  */
-struct signal_params
+struct SignalParams
 {
     int vth;  // Threshold, in sample value. Should be relative to signal max amplitude.
     int first_vth_surpass_index;  // first sample index signal surpasses vth
@@ -51,6 +51,9 @@ struct signal_params
 
 
 
+
+
+
 // CLASS HEADERS -------------------------------------------------------------------------
 
 /**
@@ -63,30 +66,30 @@ private:
 
     // Attributes
 
-    const trunk_signal *_signals;
+    const struct Signal_RE *_signals;
 
-    signal_params _emitter_params;
-    signal_params _receiver_params;
+    SignalParams _emitter_params;
+    SignalParams _receiver_params;
 
-    int _receiver_akaike_func[SAMPLE_SIZE];
+    uint32_t _receiver_akaike_func[SAMPLE_SIZE];
 
 
     // Methods
 
-    void AIC::_find_signal_maxs();  // find absolute signal maximas
-    void AIC::_find_vth_surpass();  // find threshold surpasses
-    void AIC::_extract_window();    // compute AIC window limits
-    int AIC::_mean(const int vector[], int start, int end);  // compute a vector mean
-    int AIC::_var(const int vector[], int start, int end);   // compute a vector variance
-    int AIC::_find_minimum_index(const int vector[], int start, int end);
+    void _find_signal_maxs();  // find absolute signal maximas
+    void _find_vth_surpass();  // find threshold surpasses
+    void _extract_window();    // compute AIC window limits
+    uint16_t _mean(const uint16_t vector[], uint16_t start, uint16_t end);  // compute a vector mean
+    uint16_t _var(const uint16_t vector[], uint16_t start, uint16_t end);   // compute a vector variance
+    uint16_t _find_minimum_index(const uint32_t vector[], uint16_t start, uint16_t end);
 
 
 public:
-    AIC::AIC(const trunk_signal *signals);  // Constructor
+    AIC(const struct Signal_RE *signals);  // Constructor
 
-    int delay_time_us;  // delay between signals in microseconds
-    int delay_samples;  // delay in number of samples
+    // uint16_t delay_time_us;  // delay between signals in microseconds
+    // uint16_t delay_samples;  // delay in number of samples
 
-    int AIC::compute();      // compute the AIC algorithm
+    uint16_t compute();      // compute the AIC algorithm
     
 };
