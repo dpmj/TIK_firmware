@@ -43,7 +43,7 @@ protected:
 
 public:
     ADCSampler(adc_unit_t adc_unit, adc1_channel_t adc_channel, const i2s_config_t &i2s_config);
-    int read(int16_t *samples, int count);
+    uint16_t read(int16_t *samples, uint16_t count);
     void stop();
     void start();
 };

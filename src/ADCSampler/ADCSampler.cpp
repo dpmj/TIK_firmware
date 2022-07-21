@@ -19,14 +19,14 @@ void ADCSampler::stop() {
     i2s_driver_uninstall(m_i2sPort);                        // stop the i2S driver
 }
 
-int ADCSampler::read(int16_t *samples, int count) {
-    size_t bytes_read = 0;  // bytes para almacenar las muestras
+uint16_t ADCSampler::read(int16_t *samples, uint16_t count) {
+    size_t bytes_read = 0;  // the nº of bytes read may not be same as 'count'
 
     i2s_read(m_i2sPort, (void*) samples, sizeof(uint16_t) * count, &bytes_read, portMAX_DELAY);
 
     for (int i = 0; i < count; i++) {
         samples[i] = samples[i] & 0x0FFF; // (2048 - (uint16_t(samples[i]) & 0xfff)) * 15;
-    }  // fix for the spiky readings
+    }
 
-    return bytes_read / sizeof(int16_t);
+    return (uint16_t) bytes_read / sizeof(int16_t);
 }

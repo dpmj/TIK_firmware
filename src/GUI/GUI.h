@@ -9,9 +9,7 @@
  * 
  */
 
-
 #pragma once
-
 
 #include <Arduino.h>
 #include <stdint.h>
@@ -20,31 +18,12 @@
 #include "FS.h"        // file system wrapper
 #include <SPI.h>
 
-#include <TFT_eSPI.h> // Hardware-specific library. 
-
-/* MUST BE CONFIGURED PRIOR TO USAGE.
-    // Configuration:
-    #define TFT_MISO 19
-    #define TFT_MOSI 23
-    #define TFT_SCLK 18
-    #define TFT_CS   15  // Chip select control pin
-    #define TFT_DC    2  // Data Command control pin
-    #define TFT_RST   4  // Reset pin (could connect to RST pin)
-    #define TOUCH_CS 12  // Chip select pin (T_CS) of touch screen
-    #define SPI_FREQUENCY  80000000
-    // Optional reduced SPI frequency for reading TFT
-    #define SPI_READ_FREQUENCY  20000000
-    // The XPT2046 requires a lower SPI clock rate of 2.5MHz so we define that here:
-    #define SPI_TOUCH_FREQUENCY  2500000
-*/
-
+#include <TFT_eSPI.h>  // Hardware-specific library. 
 
 #include "SYSTEM/SystemStatus.h"
+#include "SYSTEM/version.h"
 
-// Button override from TFT_eSPI
-
-#include "button/Button.h"
-
+#include "button/ButtonMod.h"  // Button override from TFT_eSPI
 
 
 /* ---------------------------------------------------------------------------------------
@@ -54,7 +33,6 @@
 #define SCREEN_X_PIXELS 240
 #define SCREEN_Y_PIXELS 320
 #define SCREEN_ROTATION 0  // 0: vertical, 1: horizontal.
-
 
 
 /* ---------------------------------------------------------------------------------------
@@ -69,44 +47,116 @@
 #define REPEAT_CAL false
 
 
-
 /* ---------------------------------------------------------------------------------------
  * Status bar icons
  */
 
 // WI-FI
 #include "sprites/WIFI/WIFI_SPRITES.c"
-#define WIFI_ICON_X_POS 110
+#define WIFI_ICON_X_POS 120
 #define WIFI_ICON_Y_POS 2
 
 // BLUETOOTH
 #include "sprites/BT/BT_ICON_SPRITE.c"
-#define BT_ICON_X_POS 126
-#define BT_ICON_Y_POS 2
+#define BT_ICON_X_POS 142
+#define BT_ICON_Y_POS 3
 
 // BATTERY CHARGING
 #include "sprites/BAT/BAT_CH_ICON_SPRITE.c"
-#define BAT_CH_ICON_X_POS 142
+#define BAT_CH_ICON_X_POS 157
 #define BAT_CH_ICON_Y_POS 2
 
 // BATTERY LEVEL
 #include "sprites/BAT/BAT_LEVELS_SPRITES.c"
-#define BAT_LEVEL_ICON_X_POS 200
+#define BAT_LEVEL_ICON_X_POS 205
 #define BAT_LEVEL_ICON_Y_POS 4
 
+
+/* ---------------------------------------------------------------------------------------
+ * Status bar style
+ */
+
+#define STATUSBAR_HEIGHT 20
+
+
+/* ---------------------------------------------------------------------------------------
+ * Title style
+ */
+
+#define TITLE_RIGHT_MARGIN 20
+#define TITLE_RIGHT_X_POS SCREEN_X_PIXELS - TITLE_RIGHT_MARGIN
+
+#define TITLE_CENTER_X_POS SCREEN_X_PIXELS/2
+#define TITLE_CENTER_Y_POS 30
+
+
+/* ---------------------------------------------------------------------------------------
+ * Button style
+ */
+
+#define BUTTON_CENTER_WIDTH 220
+#define BUTTON_CENTER_HEIGHT 40
+#define BUTTON_CENTER_MARGIN 10
+
+#define BUTTON_CENTER_X_POS SCREEN_X_PIXELS/2
+#define BUTTON_CENTER_Y_POS_1 120 + BUTTON_CENTER_HEIGHT/2
+#define BUTTON_CENTER_Y_POS_2 BUTTON_CENTER_Y_POS_1 + BUTTON_CENTER_HEIGHT + BUTTON_CENTER_MARGIN
+#define BUTTON_CENTER_Y_POS_3 BUTTON_CENTER_Y_POS_2 + BUTTON_CENTER_HEIGHT + BUTTON_CENTER_MARGIN
+#define BUTTON_CENTER_Y_POS_4 BUTTON_CENTER_Y_POS_3 + BUTTON_CENTER_HEIGHT + BUTTON_CENTER_MARGIN
+
+#define BUTTON_BACK_WIDTH 80
+#define BUTTON_BACK_HEIGHT 30
+
+#define BUTTON_BACK_X_POS BUTTON_BACK_WIDTH/2
+#define BUTTON_BACK_Y_POS SCREEN_Y_PIXELS - BUTTON_BACK_HEIGHT/2
+
+/* ---------------------------------------------------------------------------------------
+ * Measurements display on top
+ */
+
+#define MEAS_HEIGHT 30
+#define MEAS_READY_WIDTH 30
+#define MEAS_READY_HEIGHT 15
+#define MEAS_READY_X_POS 10+MEAS_READY_WIDTH/2
+#define MEAS_READY_Y_POS STATUSBAR_HEIGHT+MEAS_HEIGHT/2
+
+
+/* --------------------------------------------------------------------------------------- 
+ * Graph grid style
+ */
+
+#define GRAPH_X_TICKS 9  // number of char sub-divisions, like an oscilloscope
+#define GRAPH_Y_TICKS 7
+
+#define GRAPH_TICKS_LENGTH 6  // maximum nº of possible characters: e.g. '-100K\0'
+#define GRAPH_TOP_MARGIN 10
+
+#define GRAPH_AREA_WIDTH SCREEN_X_PIXELS  // total area of graph including margins
+#define GRAPH_AREA_HEIGHT 120
+
+#define GRAPH_GRID_WIDTH 176  // width of the graph 
+#define GRAPH_GRID_SIDE_MARGIN (GRAPH_AREA_WIDTH-GRAPH_GRID_WIDTH)/2
+
+#define GRAPH_GRID_HEIGHT 84  // height of the graph
+#define GRAPH_GRID_BOTTOM_MARGIN GRAPH_AREA_HEIGHT-GRAPH_TOP_MARGIN-GRAPH_GRID_HEIGHT
+
+#define GRAPH_LINE_X_SEP GRAPH_GRID_WIDTH/(GRAPH_X_TICKS-1)
+#define GRAPH_LINE_Y_SEP GRAPH_GRID_HEIGHT/(GRAPH_Y_TICKS-1)
+
+#define GRAPH_FIRST_POS 20
+#define GRAPH_SECOND_POS GRAPH_FIRST_POS+GRAPH_AREA_HEIGHT
 
 /* ---------------------------------------------------------------------------------------
  * Data structures
  */
 
 enum screens {
-    WELCOME,
     MAIN,
-    LOADING,
     MEASURE,
+    MEASURE_HISTORIC,
     SETTINGS,
     HELP,
-    GOODBYE,
+    SHUTDOWN_CONFIRM,
 };
 
 struct touch_pos {
@@ -118,16 +168,12 @@ struct touch_pos {
 const uint32_t LOOP_TICKS = 50 / portTICK_PERIOD_MS; // X ms / 1 ms = X ticks
 
 
-
 /* ---------------------------------------------------------------------------------------
  * Graphic User Interface class
  */
 
-
-
 class GUI
 {
-
 private:
     // uint8_t _screenID = 0;  // screen IF in which the system is
     uint16_t _xTouchPos, _yTouchPos;  // touch position
@@ -143,27 +189,32 @@ private:
 
     SemaphoreHandle_t *_mutex_spi;
 
+    // Tools
+    bool _buttonMonitor(TFT_eSPI_Button_Mod *button);
+    void _drawTitle();
+    void _clearScreen();
+    void _drawGraphGrid(uint16_t y_pos,  // position
+                         float x_lims[2],  // x axis limits. Format: [start, end]
+                         float y1_lims[2],  // primary y axis limits
+                         float y2_lims[2],  // secondary y axis limits
+                         char *title, char *x_title, char *y1_title, char *y2_title);  // titles
+    void _drawGraphs();
+
 public:
     GUI(SystemStatus *sys_status, SemaphoreHandle_t *mutex_sys_status,
         touch_pos *touch_pos, SemaphoreHandle_t *mutex_touch_pos,
-        screens *screen_id, //SemaphoreHandle_t *mutex_screen_id,
-        SemaphoreHandle_t *mutex_spi
-        );
+        screens *screen_id, SemaphoreHandle_t *mutex_spi);
 
     TFT_eSPI _tft = TFT_eSPI();       // Invoke custom library
     TFT_eSprite _spr_bt = TFT_eSprite(&_tft);
 
-
-    void drawStatusBar();
-    void drawWelcomeScreen();       // screenID 0                     
-    // void drawMainScreen();       // screenID 1
-    void drawMeasureScreen();       // screenID 2
-    // void drawSettingsScreen();   // screenID 3
-    // void drawHelpScreen();       // screenID 4
-    // void drawGoodbyeScreen();    // screenID 5
-
+    void drawStatusBar();                 
+    void drawMainScreen();
+    void drawMeasureScreen(TaskHandle_t *sampler_taskHandler);
+    void drawSettingsScreen();
+    void drawHelpScreen();
+    void drawShutdownConfirmScreen();
 
     void init();                    // initialize screen 
-    void calibrate();               // screen calibration only if necessary
-    
+    void calibrate();               // screen calibration only if necessary    
 };
