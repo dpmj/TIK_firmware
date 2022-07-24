@@ -219,7 +219,7 @@
  .pio/libdeps/esp32dev/TFT_eSPI/Extensions/Smooth_font.h \
  .pio/libdeps/esp32dev/TFT_eSPI/Extensions/Button.h \
  .pio/libdeps/esp32dev/TFT_eSPI/Extensions/Sprite.h \
- src/SYSTEM/SystemStatus.h src/SYSTEM/version.h \
+ src/SYSTEM/SystemStatus.h src/SYSTEM/version.h src/SIGNALS/SignalRE.h \
  src/GUI/button/ButtonMod.h src/GUI/sprites/WIFI/WIFI_SPRITES.c \
  src/GUI/sprites/BT/BT_ICON_SPRITE.c \
  src/GUI/sprites/BAT/BAT_CH_ICON_SPRITE.c \

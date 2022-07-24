@@ -124,7 +124,7 @@
  /home/boi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/spi_flash/include/esp_spi_flash.h \
  /home/boi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/spi_flash/include/esp_spi_flash_counters.h \
  /home/boi/.platformio/packages/framework-arduinoespressif32/variants/esp32/pins_arduino.h \
- src/ADCSampler/ADCSampler.h \
+ src/ADC_SAMPLER/ADCSampler.h \
  /home/boi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/driver/include/driver/i2s.h \
  /home/boi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/soc/include/soc/i2s_periph.h \
  /home/boi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/soc/esp32/include/soc/periph_defs.h \
@@ -143,7 +143,7 @@
  /home/boi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/driver/esp32/include/driver/adc.h \
  /home/boi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/driver/include/driver/adc_common.h \
  /home/boi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/hal/include/hal/adc_types.h \
- src/AIC/AIC.h src/AIC/SignalRE.h src/GUI/GUI.h \
+ src/SIGNALS/SignalRE.h src/AIC/AIC.h src/GUI/GUI.h \
  /home/boi/.platformio/packages/framework-arduinoespressif32/libraries/FS/src/FS.h \
  /home/boi/.platformio/packages/framework-arduinoespressif32/libraries/SPI/src/SPI.h \
  /home/boi/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-spi.h \

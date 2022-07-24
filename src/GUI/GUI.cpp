@@ -225,9 +225,121 @@ void GUI::drawStatusBar()
  * @brief 
  * 
  */
-void GUI::_clearScreen() {
-    _tft.fillRect(0, STATUSBAR_HEIGHT, SCREEN_X_PIXELS, SCREEN_Y_PIXELS-STATUSBAR_HEIGHT, TFT_WHITE);
+void GUI::_clearScreen() 
+{
+    _tft.fillRect(0, STATUSBAR_HEIGHT, SCREEN_X_PIXELS, SCREEN_Y_PIXELS-STATUSBAR_HEIGHT, 
+                  TFT_WHITE);
 }
+
+
+/**
+ * @brief 
+ * 
+ * @param vector 
+ * @param util 
+ * @param start_index 
+ * @param end_index 
+ * @param x_graph_start 
+ * @param x_graph_end 
+ * @param y_graph_start 
+ * @param y_graph_end 
+ */
+void GUI::_drawCurve(uint16_t *vector, uint16_t util, 
+                     uint16_t start_index, uint16_t end_index, 
+                     uint16_t x_graph_start, uint16_t x_graph_end, 
+                     uint16_t y_graph_start, uint16_t y_graph_end) 
+{
+    uint16_t i, j, x_range, y_range, x_graph_range, y_graph_range, 
+             x_pos, y_pos, x_pos_prev = 0, y_pos_prev = 0,
+             y_max_index, y_max_value = 0, y_min_index, y_min_value = 65535;
+    
+    if (end_index > util) {
+        end_index = util;
+    }
+    x_range = end_index - start_index;
+    x_graph_range = x_graph_end - x_graph_start;
+
+    // find y maximum, minimum indexes and values to scale it to the available space 
+    for (i = start_index; i < end_index; i++) {
+        if (vector[i] > y_max_value) {
+            y_max_index = i;
+            y_max_value = vector[i];
+        }
+        if (vector[i] < y_min_value) {
+            y_min_index = i;
+            y_min_value = vector[i];
+        }
+    }
+    y_range = y_max_value - y_min_value;
+
+    if (y_range == 0) {  // in case of no variation, center the line
+        y_range = 3;
+    }
+
+    y_graph_range = y_graph_end - y_graph_start;
+
+    // Serial.printf("\nx_range=%d; y_range=%d;\ny_max_value=%d; y_min_value=%d; y_graph_range=%d, y_graph_start:%d", 
+    //               x_range, y_range, y_max_value, y_min_value, y_graph_range, y_graph_start);
+
+    // Draw curve on the available area.
+    while (xSemaphoreTake(*_mutex_spi, LOOP_TICKS) != pdTRUE);
+    j = 0;
+    for (i = start_index; i < end_index; i++) {
+        x_pos = x_graph_start + (j * x_graph_range) / x_range;
+        y_pos = y_graph_start + (y_graph_range - (vector[i] * y_graph_range) / y_range);
+        if (!(x_pos == x_pos_prev && y_pos == y_pos_prev)) {
+            _tft.fillCircle(x_pos, y_pos, 2, TFT_RED);
+            // Serial.printf("\nFilled circle in pos: x_pos:%d; y_pos:%d", 
+            //               x_pos, y_pos);
+        }
+        j++;
+        x_pos_prev = x_pos;
+        y_pos_prev = y_pos;
+    }
+    xSemaphoreGive(*_mutex_spi);
+}
+
+
+
+/**
+ * @brief 
+ * 
+ * @param vector 
+ * @param util 
+ * @param start_index 
+ * @param end_index 
+ */
+void GUI::drawCurveOnGraph1(uint16_t *vector, uint16_t util, 
+                            uint16_t start_index, uint16_t end_index) {
+    uint16_t x_graph_start = GRAPH_GRID_SIDE_MARGIN, 
+             x_graph_end = GRAPH_GRID_SIDE_MARGIN + GRAPH_GRID_WIDTH,
+             y_graph_start = GRAPH_FIRST_POS + GRAPH_TOP_MARGIN, 
+             y_graph_end = GRAPH_FIRST_POS + GRAPH_TOP_MARGIN + GRAPH_GRID_HEIGHT;
+
+    GUI::_drawCurve(vector, util, start_index, end_index, 
+                    x_graph_start, x_graph_end, y_graph_start, y_graph_end);
+}
+
+/**
+ * @brief 
+ * 
+ * @param vector 
+ * @param util 
+ * @param start_index 
+ * @param end_index 
+ */
+void GUI::drawCurveOnGraph2(uint16_t *vector, uint16_t util, 
+                            uint16_t start_index, uint16_t end_index) 
+{
+    uint16_t x_graph_start = GRAPH_GRID_SIDE_MARGIN, 
+             x_graph_end = GRAPH_GRID_SIDE_MARGIN + GRAPH_GRID_WIDTH,
+             y_graph_start = GRAPH_SECOND_POS + GRAPH_TOP_MARGIN, 
+             y_graph_end = GRAPH_SECOND_POS + GRAPH_TOP_MARGIN + GRAPH_GRID_HEIGHT;
+
+    GUI::_drawCurve(vector, util, start_index, end_index, 
+                    x_graph_start, x_graph_end, y_graph_start, y_graph_end);
+}
+
 
 
 /**
@@ -333,10 +445,10 @@ void GUI::_drawGraphGrid(uint16_t y_pos,  // position
         sprintf(y2_tick_i, "%.3g", y2_ticks[(GRAPH_Y_TICKS-1)-i]);
 
         _tft.setTextColor(TFT_BLUE);
-        _tft.drawRightString(y1_tick_i, GRAPH_GRID_SIDE_MARGIN-2, y_pos+(i*GRAPH_LINE_Y_SEP)-3, 1);
+        _tft.drawRightString(y1_tick_i, GRAPH_GRID_SIDE_MARGIN-1, y_pos+(i*GRAPH_LINE_Y_SEP)-3, 1);
         
         _tft.setTextColor(TFT_RED);
-        _tft.drawString(y2_tick_i, GRAPH_AREA_WIDTH-(GRAPH_GRID_SIDE_MARGIN-4), y_pos+(i*GRAPH_LINE_Y_SEP)-3, 1);
+        _tft.drawString(y2_tick_i, GRAPH_AREA_WIDTH-(GRAPH_GRID_SIDE_MARGIN-3), y_pos+(i*GRAPH_LINE_Y_SEP)-3, 1);
     }
 
     _tft.setTextColor(TFT_BLUE);
@@ -365,19 +477,20 @@ void GUI::_drawGraphs() {
 
     float x_lims[2] = {7, 70};  // Limits. Format: {start, end}. Both x lims are the same
 
-    float g1_y1_lims[2] = {-20, 30};  // Different limits between graphs and y axis among
-    float g1_y2_lims[2] = {-100, 0};  // the same graph
+    float g1_y1_lims[2] = {-20, 20};  // Different limits between graphs and y axis among
+    float g1_y2_lims[2] = {-100, 100};  // the same graph
     
-    float g2_y1_lims[2] = {-20, 30}; 
+    float g2_y1_lims[2] = {-200, 0}; 
     float g2_y2_lims[2] = {-100, 0}; 
 
     GUI::_drawGraphGrid(GRAPH_FIRST_POS, x_lims, g1_y1_lims, g1_y2_lims,
                         "ACQUIRED WAVEFORMS", "Time (ms)", "Emitter (V)", "Receiver (mV)");
     GUI::_drawGraphGrid(GRAPH_SECOND_POS, x_lims, g2_y1_lims, g2_y2_lims,
-                        "PROCESSED AKAIKE FUNCTIONS", "Time (ms)", "Emitter (V)", "Receiver (mV)");
+                        "PROCESSED AKAIKE FUNCTIONS", "Time (ms)", "Emitter AIC", "Receiver AIC");
+
+    _tft.drawLine(0, GRAPH_FIRST_POS-1, SCREEN_X_PIXELS, GRAPH_FIRST_POS-1, TFT_BLACK);
     _tft.drawLine(0, GRAPH_SECOND_POS-1, SCREEN_X_PIXELS, GRAPH_SECOND_POS-1, TFT_BLACK);
 }
-
 
 
 /* ---------------------------------------------------------------------------------------
@@ -530,6 +643,7 @@ void GUI::drawMeasureScreen(TaskHandle_t *sampler_taskHandler)
             xSemaphoreGive(*_mutex_spi);
         }
         if (GUI::_buttonMonitor(&button_draw)) {
+            vTaskResume(*sampler_taskHandler);
             active = true;
         }
         if (GUI::_buttonMonitor(&button_zoom)) {

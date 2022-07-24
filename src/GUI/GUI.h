@@ -22,6 +22,7 @@
 
 #include "SYSTEM/SystemStatus.h"
 #include "SYSTEM/version.h"
+#include "SIGNALS/SignalRE.h"  // Signal structure
 
 #include "button/ButtonMod.h"  // Button override from TFT_eSPI
 
@@ -143,7 +144,7 @@
 #define GRAPH_LINE_X_SEP GRAPH_GRID_WIDTH/(GRAPH_X_TICKS-1)
 #define GRAPH_LINE_Y_SEP GRAPH_GRID_HEIGHT/(GRAPH_Y_TICKS-1)
 
-#define GRAPH_FIRST_POS 20
+#define GRAPH_FIRST_POS 50
 #define GRAPH_SECOND_POS GRAPH_FIRST_POS+GRAPH_AREA_HEIGHT
 
 /* ---------------------------------------------------------------------------------------
@@ -176,7 +177,6 @@ class GUI
 {
 private:
     // uint8_t _screenID = 0;  // screen IF in which the system is
-    uint16_t _xTouchPos, _yTouchPos;  // touch position
 
     SystemStatus *_sys_status;  // pointer to a global systatus variable accessed as mutex_
     SemaphoreHandle_t *_mutex_sys_status;
@@ -199,6 +199,10 @@ private:
                          float y2_lims[2],  // secondary y axis limits
                          char *title, char *x_title, char *y1_title, char *y2_title);  // titles
     void _drawGraphs();
+    void _drawCurve(uint16_t *vector, uint16_t util, 
+                    uint16_t start_index, uint16_t end_index, 
+                    uint16_t x_graph_start, uint16_t x_graph_end, 
+                    uint16_t y_graph_start, uint16_t y_graph_end);
 
 public:
     GUI(SystemStatus *sys_status, SemaphoreHandle_t *mutex_sys_status,
@@ -214,6 +218,8 @@ public:
     void drawSettingsScreen();
     void drawHelpScreen();
     void drawShutdownConfirmScreen();
+    void drawCurveOnGraph1(uint16_t *vector, uint16_t util, uint16_t start, uint16_t end);
+    void drawCurveOnGraph2(uint16_t *vector, uint16_t util, uint16_t start, uint16_t end);
 
     void init();                    // initialize screen 
     void calibrate();               // screen calibration only if necessary    

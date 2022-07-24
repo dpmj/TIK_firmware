@@ -8,13 +8,31 @@
 #include "AIC.h"
 
 
+/**
+ * @brief Signals coming from the ADC are de disorganized:
+ * 
+ * 2 1 4 3 6 5 8 7 ... instead of
+ * 1 2 3 4 5 6 7 8
+ * 
+ * The solution is pretty easy as we only have to exchange positions with 2 numbers
+ */
+void AIC::_reorganize_signals()
+{
+    uint16_t aux, i;
+    for (i = 1; i < _signals->util_receiver; i += 2) {  // increment in uneven numbers
+        aux = _signals->receiver[i-1];
+        _signals->receiver[i-1] = _signals->receiver[i];
+        _signals->receiver[i] = aux;
+    }
+}
+
 
 /**
  * @brief Construct a new AIC::AIC object
  * 
  * @param signals 
  */
-AIC::AIC(const Signal_RE *signals)
+AIC::AIC(Signal_RE *signals)
 {
     _signals = signals;
 }

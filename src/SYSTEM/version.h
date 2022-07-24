@@ -9,4 +9,4 @@
  * 
  */
 
-#define TIK_FW_VERSION "V0.1-20220718"
+#define TIK_FW_VERSION "V0.1-20220724"

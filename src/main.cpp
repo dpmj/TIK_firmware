@@ -16,28 +16,68 @@
 #include <Arduino.h>   // Arduino Framework
 #include <freertos/FreeRTOS.h>  // Multitasking
 
-#include "ADCSampler/ADCSampler.h"  // ADC Sampler lib
+#include "ADC_SAMPLER/ADCSampler.h"  // ADC Sampler lib
 #include "AIC/AIC.h"  // Akaike computation
-#include "AIC/SignalRE.h"  // Signal structure
+#include "SIGNALS/SignalRE.h"  // Signal structure
 #include "GUI/GUI.h"  // LCD user interface
 #include "SYSTEM/SystemStatus.h"  // system status variable
+
+
+// #include "esp_system.h"
+// #include "esp_spi_flash.h"
+// #include "esp_log.h"
+
+// #define SOC_ADC_DMA_SUPPORTED true
+// #include "../lib/esp_adc/adc_continuous.h"
+// #include "driver/adc.h"
+// #include "driver/dac.h"
+// #include "soc/syscon_periph.h"
+// #include "soc/i2s_periph.h"
+// #include "soc/sens_periph.h"
+// #include <driver/i2s.h>
+// #include "soc/syscon_reg.h"
+// #include "soc/syscon_struct.h"
+// #include "esp_adc_cal.h"
 
 
 /* ---------------------------------------------------------------------------------------
  * ADCSampler
  */
 
-ADCSampler *adcSampler = NULL;
+static Signal_RE SIGNALS_SENSORS;  // signals for writing ADC data
+
 
 #define BUF_COUNT 4         // number of dma buffers
 #define BUF_LEN 1024        // dma buffer length, number of samples. Maximum: 1024
+
+i2s_config_t adcI2SConfig = {
+    .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_ADC_BUILT_IN),
+    .sample_rate = SAMPLING_FREQUENCY,  
+    .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,  // 4 first bits are headers, the following 12 are the sample
+    .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
+    .communication_format = I2S_COMM_FORMAT_STAND_MSB,
+    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
+    .dma_buf_count = BUF_COUNT,
+    .dma_buf_len = BUF_LEN,
+    .use_apll = false,
+    .tx_desc_auto_clear = false,
+    .fixed_mclk = 0
+};
+
+// static const adc_continuous_config_t adc_i2s_pattern[] = {
+//     {.atten = ADC_ATTEN_DB_11, .bits = ADC_WIDTH_BIT_12, .channel = ADC1_CHANNEL_0},
+//     {.atten = ADC_ATTEN_DB_11, .bits = ADC_WIDTH_BIT_12, .channel = ADC1_CHANNEL_3}
+// };
+// // i2s_set_adc_mode(ADC_UNIT_1, adc_i2s_pattern, sizeof(adc_i2s_pattern));
+
+ADCSampler ADC_SAMPLER = ADCSampler(ADC_UNIT_1, ADC1_CHANNEL_3, adcI2SConfig);;
+
 
 
 /* ---------------------------------------------------------------------------------------
  * Akaike calculus
  */ 
 
-Signal_RE SIGNALS_SENSORS;
 AIC aic = AIC(&SIGNALS_SENSORS);
 
 
@@ -82,16 +122,16 @@ void refreshTouch(void *parameters)
             // Touch detection every time the screen is refreshed
             TOUCH_POS.pressed = gui._tft.getTouch(&TOUCH_POS.x, &TOUCH_POS.y);
             if (TOUCH_POS.pressed) {
-                gui._tft.fillCircle(TOUCH_POS.x, TOUCH_POS.y, 2, TFT_RED);
+                gui._tft.fillCircle(TOUCH_POS.x, TOUCH_POS.y, 2, TFT_GREEN);
             }
-            gui._tft.setCursor(0, 20);
-            gui._tft.setTextFont(1);
-            gui._tft.setTextSize(1);
-            gui._tft.setTextColor(TFT_RED, TFT_WHITE);
-            gui._tft.print("X: ");
-            gui._tft.print(TOUCH_POS.x);
-            gui._tft.print(" | Y: ");
-            gui._tft.print(TOUCH_POS.y);
+            // gui._tft.setCursor(0, 20);
+            // gui._tft.setTextFont(1);
+            // gui._tft.setTextSize(1);
+            // gui._tft.setTextColor(TFT_GREEN, TFT_WHITE);
+            // gui._tft.print("X: ");
+            // gui._tft.print(TOUCH_POS.x);
+            // gui._tft.print(" | Y: ");
+            // gui._tft.print(TOUCH_POS.y);
             xSemaphoreGive(MUTEX_SPI);
         }
         vTaskDelay(LOOP_TICKS);
@@ -117,6 +157,7 @@ void statusBarRefresher(void *parameters)
 }
 
 
+
 // SAMPLER. SAMPLES SIGNALS WHEN INDICATED
 xTaskHandle sampler_TaskHandler;  // refreshScreen task handler pointer
 
@@ -128,13 +169,20 @@ void sampler(void *parameters)
 {   
     while (true)
     {
-        vTaskDelay(1000);
         vTaskSuspend(NULL);  // Suspend task until necessary. Will be activated by another task.
+        Serial.printf("\nACTIVATED SAMPLER,");
+        SIGNALS_SENSORS.util_receiver = ADC_SAMPLER.read(SIGNALS_SENSORS.receiver, 
+                                                         SIGNALS_SENSORS.length);
+
+        // AIC.;
+        vTaskDelay(50);  // stability
+        Serial.printf("\nSIGNAL READ!\n");
+        gui.drawCurveOnGraph1(SIGNALS_SENSORS.receiver, SIGNALS_SENSORS.util_receiver,
+                              0, SIGNALS_SENSORS.util_receiver);
+        gui.drawCurveOnGraph2(SIGNALS_SENSORS.receiver, SIGNALS_SENSORS.util_receiver,
+                              3000, 5000);
     }
-
 }
-
-
 
 
 
@@ -248,9 +296,10 @@ void setup(void)
     // TASKS WHICH RUN ON CORE 1
 
     // ADC Sampler
+    ADC_SAMPLER.start();
     xTaskCreatePinnedToCore(sampler, "refreshManagerTask", 16384, NULL, 10, 
         &sampler_TaskHandler, 1);
-    vTaskSuspend(sampler_TaskHandler);
+    // vTaskSuspend(sampler_TaskHandler);
 
     Serial.printf("activated tasks\n");
 }

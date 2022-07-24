@@ -57,12 +57,12 @@ class TFT_eSPI_Button_Mod : public TFT_eSPI {
 
  private:
   TFT_eSPI *_gfx;
-  int16_t  _x1, _y1; // Coordinates of top-left corner of button
-  int16_t  _xd, _yd; // Button text datum offsets (wrt centre of button)
-  uint16_t _w, _h;   // Width and height of button
-  uint8_t  _textfont, _textdatum; // Text size multiplier and text datum for button
-  uint16_t _outlinecolor, _fillcolor, _textcolor;
+  int16_t  _x1 = 0, _y1 = 0; // Coordinates of top-left corner of button
+  int16_t  _xd = 0, _yd = 0; // Button text datum offsets (wrt centre of button)
+  uint16_t _w = 0, _h = 0;   // Width and height of button
+  uint8_t  _textfont = 0, _textdatum; // Text size multiplier and text datum for button
+  uint16_t _outlinecolor = 0, _fillcolor = 0, _textcolor = 0;
   char     _label[10]; // Button text is 9 chars maximum unless long_name used
 
-  bool  currstate, laststate; // Button states
+  bool  currstate = false, laststate = false; // Button states
 };
