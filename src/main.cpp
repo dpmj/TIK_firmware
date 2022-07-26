@@ -70,7 +70,7 @@ i2s_config_t adcI2SConfig = {
 // };
 // // i2s_set_adc_mode(ADC_UNIT_1, adc_i2s_pattern, sizeof(adc_i2s_pattern));
 
-ADCSampler ADC_SAMPLER = ADCSampler(ADC_UNIT_1, ADC1_CHANNEL_3, adcI2SConfig);;
+ADCSampler ADC_SAMPLER = ADCSampler(ADC_UNIT_1, ADC1_CHANNEL_0, adcI2SConfig);;
 
 
 
@@ -180,7 +180,7 @@ void sampler(void *parameters)
         gui.drawCurveOnGraph1(SIGNALS_SENSORS.receiver, SIGNALS_SENSORS.util_receiver,
                               0, SIGNALS_SENSORS.util_receiver);
         gui.drawCurveOnGraph2(SIGNALS_SENSORS.receiver, SIGNALS_SENSORS.util_receiver,
-                              3000, 5000);
+                              4000, 5500);
     }
 }
 

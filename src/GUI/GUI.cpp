@@ -288,7 +288,10 @@ void GUI::_drawCurve(uint16_t *vector, uint16_t util,
         x_pos = x_graph_start + (j * x_graph_range) / x_range;
         y_pos = y_graph_start + (y_graph_range - (vector[i] * y_graph_range) / y_range);
         if (!(x_pos == x_pos_prev && y_pos == y_pos_prev)) {
-            _tft.fillCircle(x_pos, y_pos, 2, TFT_RED);
+            if (j) {
+                _tft.drawLine(x_pos_prev, y_pos_prev, x_pos, y_pos, TFT_RED);
+            }
+            _tft.fillCircle(x_pos, y_pos, 1, TFT_RED);
             // Serial.printf("\nFilled circle in pos: x_pos:%d; y_pos:%d", 
             //               x_pos, y_pos);
         }
